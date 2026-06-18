@@ -51,7 +51,7 @@ INN_X1    = VLINE_X[3] - 1.5
 BAL_X1    = TBL_RIGHT  - 1.5
 FIRST_ROW_TOP = 265.64
 ROW_H = 11.7
-FS_DATE, FS_DESC, FS_NUM = 10.0, 9.9, 9.0
+FS_DATE, FS_DESC, FS_NUM = 9.5, 9.9, 9.0
 
 
 def pdf_y(py):
@@ -64,6 +64,18 @@ def clean_amt(amt):
         return '0'
     s = str(amt).lstrip('+-').strip()
     return s if s else '0'
+
+def normalize_date(s):
+    """ '2026年6月16日' → '2026年06月16日' （月日をゼロ埋め） """
+    import re
+    if not s:
+        return s
+    m = re.match(r'(\d{4})年(\d{1,2})月(\d{1,2})日', s)
+    if m:
+        y, mo, d = m.group(1), int(m.group(2)), int(m.group(3))
+        return f'{y}年{mo:02d}月{d:02d}日'
+    return s
+
 
 
 def build_pdf(payload):
@@ -112,7 +124,7 @@ def build_pdf(payload):
     for i, row in enumerate(rows):
         ty = pdf_y(FIRST_ROW_TOP + (i + 1) * ROW_H) + 2.6
         c.setFont('M', FS_DATE)
-        c.drawCentredString(DATE_CX, ty, row.get('date', ''))
+        c.drawCentredString(DATE_CX, ty, normalize_date(row.get('date', '')))
         c.setFont('M', FS_DESC)
         c.drawString(DESC_X0, ty, row.get('desc', ''))
         c.setFont('M', FS_NUM)
@@ -123,7 +135,7 @@ def build_pdf(payload):
     # 以下余白
     ty = pdf_y(FIRST_ROW_TOP + (len(rows) + 1) * ROW_H) + 2.6
     c.setFont('M', FS_DESC)
-    c.drawCentredString((VLINE_X[1] + VLINE_X[2]) / 2, ty, '以下余白')
+    c.drawRightString(VLINE_X[1] - 1.5, ty, '以下余白')
 
     c.save()
     packet.seek(0)
