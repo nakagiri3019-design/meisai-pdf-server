@@ -51,7 +51,7 @@ INN_X1    = VLINE_X[3] - 1.5
 BAL_X1    = TBL_RIGHT  - 1.5
 FIRST_ROW_TOP = 265.64
 ROW_H = 11.7
-FS_DATE, FS_DESC, FS_NUM = 9.5, 9.9, 9.0
+FS_DATE, FS_DESC, FS_NUM = 9.0, 9.3, 8.3
 
 
 def pdf_y(py):
@@ -107,7 +107,12 @@ def build_pdf(payload):
     rows = payload.get('rows', [])
 
     def jdate(d):
-        return f'{d.year}年 {d.month}月{d.day}日'
+        # 本物（4月）の表記に合わせる:
+        #   年の後・月の後にスペース、月日が1桁なら数字前にスペースで桁揃え
+        #   例: 2026 年  4 月  1 日 / 2026 年  4 月 16 日
+        mo = f'{d.month:>2}'   # 1桁なら前にスペース（ ' 4' / '12'）
+        dd = f'{d.day:>2}'     # 1桁なら前にスペース（ ' 1' / '16'）
+        return f'{d.year} 年 {mo} 月 {dd} 日'
 
     # ---- オーバーレイ生成 ----
     packet = io.BytesIO()
