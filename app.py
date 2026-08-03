@@ -39,6 +39,7 @@ def generate_preflight():
 pdfmetrics.registerFont(TTFont('M', 'mincho.ttf'))
 
 TEMPLATE_PATH = 'template.pdf'
+TEMPLATE_P2_PATH = 'template_p2.pdf'   # 2ページ目以降用（銀行名・住所・社印なし）
 PAGE_W, PAGE_H = 595, 842
 
 # ---- テンプレート実測レイアウト定数 ----
@@ -181,11 +182,15 @@ def build_pdf(payload):
     overlay = PdfReader(packet)
     with open(TEMPLATE_PATH, 'rb') as f:
         tpl_bytes = f.read()
+    with open(TEMPLATE_P2_PATH, 'rb') as f:
+        tpl_p2_bytes = f.read()
 
     writer = PdfWriter()
     for pno in range(total_pages):
+        # 1ページ目と2ページ目以降で下敷きを使い分ける
+        src = tpl_bytes if pno == 0 else tpl_p2_bytes
         # merge_page は元ページを書き換えるので、ページ毎に読み直す
-        page = PdfReader(io.BytesIO(tpl_bytes)).pages[0]
+        page = PdfReader(io.BytesIO(src)).pages[0]
         page.merge_page(overlay.pages[pno], over=True)
         writer.add_page(page)
 
