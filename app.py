@@ -121,12 +121,9 @@ def build_pdf(payload):
     rows = payload.get('rows', [])
 
     def jdate(d):
-        # 本物（4月）の表記に合わせる:
-        #   年の後・月の後にスペース、月日が1桁なら数字前にスペースで桁揃え
-        #   例: 2026 年  4 月  1 日 / 2026 年  4 月 16 日
-        mo = f'{d.month:>2}'   # 1桁なら前にスペース（ ' 4' / '12'）
-        dd = f'{d.day:>2}'     # 1桁なら前にスペース（ ' 1' / '16'）
-        return f'{d.year} 年 {mo} 月 {dd} 日'
+        # 数字と年月日の間は詰め、「年」「月」の後ろに半角スペース1つ（桁揃えなし）
+        #   例: 2026年 4月 1日 / 2026年 10月 16日
+        return f'{d.year}年 {d.month}月 {d.day}日'
 
     # 「以下余白」も枠を1行分使うので、行数+1 でページ数を決める
     total_pages = max(1, math.ceil((len(rows) + 1) / ROWS_PER_PAGE))
@@ -143,7 +140,9 @@ def build_pdf(payload):
         # ヘッダー（作成日・対象期間） ※ラベルはテンプレ印字済み、後ろに続ける
         # 背景テンプレを全ページに敷くので、各ページの先頭に出す
         c.setFont('M', 9.0)
+        c.setFont('M', 10)     # 作成日
         c.drawString(463.0, pdf_y(60.5) + 1.5, jdate(created))
+        c.setFont('M', 9.9)    # 対象期間
         c.drawString(75.0, pdf_y(200.7) + 1.5, period_str)
 
         # 明細行
